@@ -1,0 +1,241 @@
+:root {
+  --bg: #16181d;
+  --bg-raised: #1e2129;
+  --bg-hover: #262a34;
+  --border: #2c3140;
+  --text: #e8eaf0;
+  --text-dim: #8b91a3;
+  --accent: #5aa9e6;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  font-size: 12px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* draggable title strip */
+.titlebar {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.titlebar .context {
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titlebar .source {
+  color: var(--text-dim);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.titlebar .spacer {
+  flex: 1;
+}
+
+.titlebar button {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.titlebar button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.titlebar button.active {
+  color: var(--accent);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.idle {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 0 24px;
+  line-height: 1.6;
+}
+
+/* card rows */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-bottom: 1px solid rgba(44, 49, 64, 0.45);
+  position: relative;
+}
+
+.row:hover {
+  background: var(--bg-hover);
+}
+
+.row .wr {
+  width: 46px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.row .rarity {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rarity.common { background: #9ba1b0; }
+.rarity.uncommon { background: #b8ccd8; box-shadow: 0 0 3px #8fb3c9; }
+.rarity.rare { background: #e0b45c; box-shadow: 0 0 3px #d4a03c; }
+.rarity.mythic { background: #e06c3c; box-shadow: 0 0 4px #e0502c; }
+
+.row .pips {
+  width: 40px;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pip-W { color: #f5edba; }
+.pip-U { color: #7fb8e8; }
+.pip-B { color: #a58fb3; }
+.pip-R { color: #e88f6a; }
+.pip-G { color: #8fca8f; }
+.pip-C { color: #9ba1b0; }
+
+.row .name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row .minor {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.row .personal {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  width: 62px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.section-head {
+  padding: 7px 10px 3px;
+  color: var(--text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.col-head {
+  display: flex;
+  gap: 7px;
+  padding: 2px 10px 4px;
+  color: var(--text-dim);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+/* hover card preview */
+.preview {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+  width: 230px;
+  border-radius: 11px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+/* settings */
+.settings {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.settings select,
+.settings input[type='range'] {
+  accent-color: var(--accent);
+}
+
+.settings select {
+  background: var(--bg-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.settings .hint {
+  color: var(--text-dim);
+  font-size: 10px;
+  line-height: 1.5;
+}

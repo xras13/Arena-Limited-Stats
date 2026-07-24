@@ -1,0 +1,8 @@
+node_modules/
+out/
+dist/
+*.local
+.DS_Store
+
+# Real Arena logs contain the account display name — keep them out of git
+test/fixtures/*.log
