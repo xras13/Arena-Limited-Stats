@@ -1,32 +1,14 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { arenaRawDirs } from '../platform'
 
-/**
- * Offline card lookup against Arena's own card database
- * (Raw_CardDatabase_*.mtga, a SQLite file shipped with the game).
- *
- * Resolves any grpId the game itself knows — including basics and brand-new
- * sets where Scryfall's arena_id mapping lags. No network, no rate limits.
- * If Arena isn't installed (or node:sqlite is unavailable) every lookup
- * returns null and callers fall through to their next option.
- */
 export interface ArenaCard {
   name: string
   color: string
   rarity: string
 }
 
-const RAW_DIRS = [
-  path.join(
-    os.homedir(),
-    'Library/Application Support/Steam/steamapps/common/MTGA/MTGA_Data/Downloads/Raw'
-  ),
-  '/Applications/MTGA.app/Contents/Resources/Data/Downloads/Raw'
-]
-
-// Verified against the DB's Enums table / 17lands rarity strings
 const RARITY: Record<number, string> = {
   1: 'basic',
   2: 'common',
@@ -46,14 +28,13 @@ let db: DatabaseSync | null = null
 let dbTried = false
 
 function findDatabasePath(): string | null {
-  for (const dir of RAW_DIRS) {
+  for (const dir of arenaRawDirs()) {
     try {
       const files = fs
         .readdirSync(dir)
         .filter((f) => f.startsWith('Raw_CardDatabase_') && f.endsWith('.mtga'))
         .map((f) => path.join(dir, f))
       if (files.length === 0) continue
-      // A game update can leave more than one; the newest is current
       files.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
       return files[0]
     } catch {
@@ -76,7 +57,6 @@ function getDb(): DatabaseSync | null {
   return db
 }
 
-/** Forget the cached handle so the next lookup re-finds the file (game updates). */
 export function resetForTests(): void {
   db = null
   dbTried = false

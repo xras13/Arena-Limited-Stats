@@ -35,7 +35,6 @@ body {
   height: 100%;
 }
 
-/* draggable title strip */
 .titlebar {
   -webkit-app-region: drag;
   display: flex;
@@ -102,7 +101,6 @@ body {
   line-height: 1.6;
 }
 
-/* card rows */
 .row {
   display: flex;
   align-items: center;
@@ -131,6 +129,7 @@ body {
   flex-shrink: 0;
 }
 
+.rarity.basic { background: #6b7280; }
 .rarity.common { background: #9ba1b0; }
 .rarity.uncommon { background: #b8ccd8; box-shadow: 0 0 3px #8fb3c9; }
 .rarity.rare { background: #e0b45c; box-shadow: 0 0 3px #d4a03c; }
@@ -156,6 +155,12 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.row .name .count {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
 }
 
 .row .minor {
@@ -195,7 +200,6 @@ body {
   text-transform: uppercase;
 }
 
-/* hover card preview */
 .preview {
   position: fixed;
   z-index: 10;
@@ -205,7 +209,6 @@ body {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
 }
 
-/* settings */
 .settings {
   padding: 14px;
   display: flex;

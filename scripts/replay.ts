@@ -1,9 +1,3 @@
-/**
- * Replay harness: feed a Player.log through the parser + store and print
- * what the app would see. Usage:
- *
- *   npm run replay -- test/fixtures/pick2draft-msh-player.log
- */
 import fs from 'node:fs'
 import { LogParser } from '../src/main/log/parser'
 import { DraftStore } from '../src/main/log/draft-store'
@@ -69,7 +63,6 @@ if (state.sealedPool) {
   console.log(`sealed pool    : ${state.sealedPool.grpIds.length} cards (${state.sealedPool.eventName})`)
 }
 
-// Rated table: join the last pack + full picked pool against 17lands
 async function printRated(): Promise<void> {
   if (!state.set || !state.format) return
   const ratings = await getRatings(state.set, state.format)

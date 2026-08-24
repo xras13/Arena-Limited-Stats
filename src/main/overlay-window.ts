@@ -25,9 +25,10 @@ export function createOverlayWindow(): BrowserWindow {
     }
   })
 
-  // Float above the Arena window, including macOS fullscreen spaces
   win.setAlwaysOnTop(true, 'screen-saver')
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  if (process.platform === 'darwin') {
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  }
   win.setOpacity(settings.opacity)
 
   win.once('ready-to-show', () => {

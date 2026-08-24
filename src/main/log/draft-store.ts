@@ -33,7 +33,26 @@ export interface SessionState {
 
 type Listener = (state: SessionState) => void
 
-/** Reduces parser events into the current limited-event session state. */
+interface LimitedCourse {
+  course: { internalEventName: string; currentModule?: string; cardPool?: number[] }
+  parsed: { format: string; set: string }
+}
+
+function bestCourse(courses: LimitedCourse[]): LimitedCourse {
+  return courses.reduce((best, candidate) => (rank(candidate) >= rank(best) ? candidate : best))
+}
+
+function rank(c: LimitedCourse): number {
+  const hasPool = c.course.cardPool && c.course.cardPool.length > 0 ? 2 : 0
+  const running = c.course.currentModule !== 'Complete' ? 1 : 0
+  return hasPool + running
+}
+
+function sameIds(a: number[] | undefined, b: number[] | null): boolean {
+  if (!a || !b) return !a && !b
+  return a.length === b.length && a.every((id, i) => id === b[i])
+}
+
 export class DraftStore {
   private state: SessionState = {}
   private listeners: Listener[] = []
@@ -118,7 +137,6 @@ export class DraftStore {
           draft: {
             ...draft,
             completed: true,
-            // Trust the log's final pool over tracked picks (rotation-safe)
             pickedGrpIds:
               event.pickedGrpIds && event.pickedGrpIds.length > 0
                 ? event.pickedGrpIds
@@ -129,37 +147,42 @@ export class DraftStore {
       }
 
       case 'CoursesUpdated': {
-        let changed = false
-        for (const course of event.courses) {
+        const limited = event.courses.flatMap((course) => {
           const parsed = parseEventName(course.internalEventName)
-          if (!parsed) continue
-          // Recover the active event when EventJoin happened before this log started
-          if (!this.state.eventName) {
-            this.state = {
-              ...this.state,
-              eventName: course.internalEventName,
-              format: parsed.format,
-              set: parsed.set
-            }
-            changed = true
-          }
-          if (
-            /Sealed/i.test(parsed.format) &&
-            course.cardPool &&
-            course.cardPool.length > 0
-          ) {
-            this.state = {
-              ...this.state,
-              sealedPool: {
-                eventName: course.internalEventName,
-                set: parsed.set,
-                grpIds: course.cardPool
+          return parsed ? [{ course, parsed }] : []
+        })
+        if (limited.length === 0) return false
+
+        const active =
+          limited.find((c) => c.course.internalEventName === this.state.eventName) ??
+          bestCourse(limited)
+
+        const isNewEvent = active.course.internalEventName !== this.state.eventName
+        const pool =
+          /Sealed/i.test(active.parsed.format) &&
+          active.course.cardPool &&
+          active.course.cardPool.length > 0
+            ? active.course.cardPool
+            : null
+
+        if (!isNewEvent && sameIds(this.state.sealedPool?.grpIds, pool)) return false
+
+        this.state = {
+          ...(isNewEvent ? {} : this.state),
+          eventName: active.course.internalEventName,
+          format: active.parsed.format,
+          set: active.parsed.set,
+          ...(pool
+            ? {
+                sealedPool: {
+                  eventName: active.course.internalEventName,
+                  set: active.parsed.set,
+                  grpIds: pool
+                }
               }
-            }
-            changed = true
-          }
+            : {})
         }
-        return changed
+        return true
       }
     }
   }

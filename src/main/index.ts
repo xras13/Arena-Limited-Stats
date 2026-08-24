@@ -15,7 +15,6 @@ import type { PersonalStatsLookup } from './data/join'
 let overlay: BrowserWindow | null = null
 const store = new DraftStore()
 
-// Personal 17lands stats, loaded lazily per set once the account is connected
 let personalSet: string | null = null
 let personalStats: seventeen.PersonalStatsMap | null = null
 let personalLoading = false
@@ -34,7 +33,7 @@ async function ensurePersonalStats(): Promise<PersonalStatsLookup | undefined> {
         if (await seventeen.isConnected()) {
           personalStats = await seventeen.getPersonalStats(set)
           personalSet = set
-          void pushViewModel() // re-render with personal columns
+          void pushViewModel()
         }
       } catch (err) {
         console.warn('[17lands personal]', err)
@@ -46,7 +45,6 @@ async function ensurePersonalStats(): Promise<PersonalStatsLookup | undefined> {
   return undefined
 }
 
-// Serialize view-model builds; coalesce bursts of log events into one push
 let building = false
 let dirty = false
 
@@ -79,14 +77,10 @@ function startTailing(logPath: string): LogTailer {
   tailer.on('reset', () => store.apply({ type: 'LogReset' }))
   tailer.on('error', (err: Error) => console.error('[tailer]', err))
   store.onChange(() => void pushViewModel())
-  tailer.start(true) // catch up: recover a draft already in progress
+  tailer.start(true)
   return tailer
 }
 
-/**
- * Dev mode: `--simulate <fixture>` replays a captured Player.log into a temp
- * file on a timer, exercising the real tailer -> parser -> UI path without Arena.
- */
 function startSimulation(fixturePath: string): void {
   const simPath = path.join(os.tmpdir(), `mtga-companion-sim-${Date.now()}.log`)
   fs.writeFileSync(simPath, '')
@@ -107,8 +101,6 @@ function startSimulation(fixturePath: string): void {
 }
 
 app.whenReady().then(() => {
-  // Required for the overlay to join fullscreen spaces (visibleOnFullScreen):
-  // the app must be an accessory app with no Dock presence.
   app.dock?.hide()
 
   ipcMain.handle('get-settings', () => getSettings())
@@ -123,7 +115,7 @@ app.whenReady().then(() => {
   ipcMain.handle('seventeen-connect', async () => {
     const ok = await seventeen.connect()
     if (ok) {
-      personalSet = null // force a reload for the current set
+      personalSet = null
       personalStats = null
       void pushViewModel()
     }

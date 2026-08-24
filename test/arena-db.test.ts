@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { lookupLocalCard } from '../src/main/data/arena-db'
 
-// Runs against the real Arena install; skips cleanly on machines without it
 const swamp = lookupLocalCard(105177)
 
 describe.skipIf(swamp === null)('arena-db (requires local MTGA install)', () => {

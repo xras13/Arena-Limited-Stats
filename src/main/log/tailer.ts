@@ -8,14 +8,6 @@ export interface LogTailerEvents {
   error: (err: Error) => void
 }
 
-/**
- * Tails Arena's Player.log with byte-offset incremental reads.
- *
- * Watches the parent directory rather than the file: Arena truncates/replaces
- * the file on launch, and a directory watch survives the inode swap.
- * A shrink (size < offset) means rotation/truncation -> emit 'reset' and
- * re-read from the start so a draft in progress is recovered.
- */
 export class LogTailer extends EventEmitter {
   private offset = 0
   private watcher: fs.FSWatcher | null = null
@@ -32,7 +24,6 @@ export class LogTailer extends EventEmitter {
     super()
   }
 
-  /** @param catchUp when true (default), reads the existing file content first. */
   start(catchUp = true): void {
     if (!catchUp) {
       try {
@@ -47,10 +38,6 @@ export class LogTailer extends EventEmitter {
       if (filename && filename !== base) return
       this.scheduleRead()
     })
-    // macOS FSEvents does not report in-place appends (Arena keeps the file
-    // open and writes without touching directory entries), so the watcher
-    // above only catches rotation. A stat poll is the dependable signal;
-    // readNew() returns immediately when the size is unchanged.
     this.pollTimer = setInterval(() => void this.readNew(), this.pollIntervalMs)
     this.scheduleRead()
   }
@@ -81,7 +68,7 @@ export class LogTailer extends EventEmitter {
       try {
         stat = await fs.promises.stat(this.filePath)
       } catch {
-        return // file missing (Arena not installed / mid-rotation); keep watching
+        return
       }
 
       if (stat.size < this.offset) {
@@ -118,9 +105,4 @@ export class LogTailer extends EventEmitter {
   }
 }
 
-export function defaultLogPath(): string {
-  return path.join(
-    process.env.HOME ?? '',
-    'Library/Logs/Wizards Of The Coast/MTGA/Player.log'
-  )
-}
+export { defaultLogPath } from '../platform'

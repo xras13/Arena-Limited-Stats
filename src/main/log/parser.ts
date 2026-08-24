@@ -2,22 +2,7 @@ import type { CourseSummary, LogEvent } from './events'
 
 const LOGGER_PREFIX = '[UnityCrossThreadLogger]'
 
-/**
- * Stateful line-feed parser for Arena's Player.log.
- *
- * Verified line shapes (Arena as of 2026-07, live log):
- *
- *   [UnityCrossThreadLogger]Draft.Notify {"draftId":"...","SelfPick":1,"SelfPack":1,"PackCards":"105005,105084,..."}
- *   [UnityCrossThreadLogger]==> EventPlayerDraftMakePick {"id":"...","request":"{\"DraftId\":\"...\",\"GrpIds\":[105140,104920],\"Pack\":1,\"Pick\":1}"}
- *   [UnityCrossThreadLogger]==> EventJoin {"id":"...","request":"{\"EventName\":\"PickTwoDraft_MSH_20260623\",...}"}
- *   [UnityCrossThreadLogger]==> DraftCompleteDraft {"id":"...","request":"{\"EventName\":\"...\",\"IsBotDraft\":false}"}
- *   <== EventGetCoursesV2(id)          <- response header; JSON payload is on the NEXT line
- *   {"Courses":[{"CourseId":"...","InternalEventName":"...","CardPool":[...],...}]}
- *
- * Unknown lines are ignored; malformed JSON never throws.
- */
 export class LogParser {
-  /** Method name of a `<== Method(id)` response header awaiting its payload line. */
   private pendingResponse: string | null = null
 
   feedLine(rawLine: string): LogEvent[] {
@@ -30,7 +15,6 @@ export class LogParser {
       if (line.startsWith('{') || line.startsWith('[')) {
         return this.parseResponsePayload(method, line)
       }
-      // fall through: header wasn't followed by a payload; treat line normally
     }
 
     const responseHeader = line.match(/^<== (\w+)\([0-9a-f-]+\)\s*$/)
@@ -72,7 +56,6 @@ export class LogParser {
 
   private parseRequest(method: string, outerJson: string): LogEvent[] {
     const outer = safeJson(outerJson)
-    // The interesting fields live in a JSON-escaped string under "request"
     const req = typeof outer?.request === 'string' ? safeJson(outer.request) : outer
     if (!req) return []
 
@@ -96,8 +79,6 @@ export class LogParser {
       }
       case 'DraftCompleteDraft':
         return [{ type: 'DraftCompleted', eventName: String(req.EventName ?? '') }]
-      // Quick (bot) drafts: 0-indexed, cards in PickInfo.CardIds as strings.
-      // No DraftId exists in this flow; the event name is a stable stand-in.
       case 'BotDraftDraftPick': {
         const info = req.PickInfo as Record<string, any> | undefined
         const grpIds = Array.isArray(info?.CardIds)
@@ -123,7 +104,7 @@ export class LogParser {
     const payload = safeJson(json)
     if (!payload) return []
 
-    if (method.startsWith('EventGetCourses') || method === 'EventJoin') {
+    if (method.startsWith('EventGetCourse') || method === 'EventJoin') {
       const rawCourses = Array.isArray(payload.Courses)
         ? payload.Courses
         : typeof payload.Course === 'object' && payload.Course !== null
@@ -135,15 +116,10 @@ export class LogParser {
       return courses.length > 0 ? [{ type: 'CoursesUpdated', courses }] : []
     }
 
-    // Quick (bot) draft responses: BotDraftDraftStatus / BotDraftDraftPick carry
-    // {"CurrentModule":"BotDraft","Payload":"{...DraftStatus, PackNumber (0-idx),
-    //  DraftPack:[\"104987\",...]}"} — the inner Payload is a JSON-escaped string.
     if (method.startsWith('BotDraftDraft')) {
       const inner =
         typeof payload.Payload === 'string' ? safeJson(payload.Payload) : payload
       if (!inner) return []
-      // The final pick's response carries no pack — completion is signaled by
-      // DraftStatus alone (bot drafts never send DraftCompleteDraft).
       if (inner.DraftStatus === 'Completed') {
         const picked = Array.isArray(inner.PickedCards)
           ? inner.PickedCards.map(Number).filter(Number.isFinite)
@@ -179,9 +155,17 @@ function toCourseSummary(raw: unknown): CourseSummary | null {
   if (typeof raw !== 'object' || raw === null) return null
   const c = raw as Record<string, unknown>
   if (typeof c.CourseId !== 'string' || typeof c.InternalEventName !== 'string') return null
-  const cardPool = Array.isArray(c.CardPool)
+  let cardPool = Array.isArray(c.CardPool)
     ? c.CardPool.map(Number).filter(Number.isFinite)
     : undefined
+  if ((!cardPool || cardPool.length === 0) && Array.isArray(c.CardPoolByCollation)) {
+    const flattened = c.CardPoolByCollation.flatMap((entry) =>
+      typeof entry === 'object' && entry !== null && Array.isArray((entry as Record<string, unknown>).CardPool)
+        ? ((entry as Record<string, unknown>).CardPool as unknown[]).map(Number).filter(Number.isFinite)
+        : []
+    )
+    if (flattened.length > 0) cardPool = flattened
+  }
   return {
     courseId: c.CourseId,
     internalEventName: c.InternalEventName,

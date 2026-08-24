@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rateCards, sortByGihWr } from '../src/main/data/join'
+import { collapsePool, rateCards, sortByGihWr } from '../src/main/data/join'
 import { formatFallbackChain, normalizeName } from '../src/main/data/ratings'
 import type { RatingsResult } from '../src/main/data/ratings'
 import type { CardRating, RatedCard } from '../src/shared/types'
@@ -35,8 +35,6 @@ function ratingsResult(ratings: CardRating[]): RatingsResult {
 describe('rateCards', () => {
   it('joins by mtga_id and keeps unknown cards visible', async () => {
     const ratings = ratingsResult([rating(101, 'Alpha', 0.6), rating(102, 'Beta', 0.5)])
-    // 999999999 resolves nowhere (Scryfall negative lookup may hit network once;
-    // an invalid id returns 404 and is cached)
     const cards = await rateCards([101, 102], ratings)
     expect(cards.map((c) => c.name)).toEqual(['Alpha', 'Beta'])
     expect(cards[0].rating?.everDrawnWinRate).toBe(0.6)
@@ -51,6 +49,44 @@ describe('sortByGihWr', () => {
       { grpId: 3, name: 'High', color: '', rarity: '', rating: rating(3, 'High', 0.62) }
     ]
     expect(sortByGihWr(cards).map((c) => c.name)).toEqual(['High', 'Low', 'Unrated'])
+  })
+})
+
+describe('collapsePool', () => {
+  const card = (grpId: number, name: string, rarity = 'common'): RatedCard => ({
+    grpId,
+    name,
+    color: 'W',
+    rarity
+  })
+
+  it('merges duplicate copies into one entry with a count', () => {
+    const pool = collapsePool([card(1, 'Alpha'), card(2, 'Beta'), card(1, 'Alpha'), card(1, 'Alpha')])
+    expect(pool).toHaveLength(2)
+    expect(pool[0]).toMatchObject({ name: 'Alpha', count: 3 })
+    expect(pool[1]).toMatchObject({ name: 'Beta', count: 1 })
+  })
+
+  it('drops basic lands by rarity and by name', () => {
+    const pool = collapsePool([
+      card(1, 'Alpha'),
+      card(2, 'Mountain', 'basic'),
+      card(3, 'Island'),
+      card(4, 'Snow-Covered Forest'),
+      card(5, 'Wastes')
+    ])
+    expect(pool.map((c) => c.name)).toEqual(['Alpha'])
+  })
+
+  it('keeps cards whose names merely contain a basic land type', () => {
+    const pool = collapsePool([card(1, 'Mountain Valley'), card(2, 'Islandic Ritual')])
+    expect(pool).toHaveLength(2)
+  })
+
+  it('leaves a pool without duplicates unchanged in order', () => {
+    const pool = collapsePool([card(1, 'Alpha'), card(2, 'Beta'), card(3, 'Gamma')])
+    expect(pool.map((c) => c.name)).toEqual(['Alpha', 'Beta', 'Gamma'])
+    expect(pool.every((c) => c.count === 1)).toBe(true)
   })
 })
 

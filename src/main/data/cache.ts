@@ -1,15 +1,8 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
+import { appCacheDir } from '../platform'
 
-/**
- * Tiny JSON disk cache. Lives in the same place Electron's userData points at
- * so the headless replay harness and the app share caches.
- */
-const CACHE_DIR = path.join(
-  os.homedir(),
-  'Library/Application Support/mtga-companion/cache'
-)
+const CACHE_DIR = appCacheDir()
 
 interface Envelope<T> {
   fetchedAt: number
@@ -23,7 +16,6 @@ export function readCache<T>(key: string, maxAgeMs: number): T | null {
   return entry.value
 }
 
-/** Returns the cached value regardless of age (offline fallback). */
 export function readCacheStale<T>(key: string): T | null {
   return readEnvelope<T>(key)?.value ?? null
 }

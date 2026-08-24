@@ -18,6 +18,9 @@ export function CardRow({ card, mean }: { card: RatedCard; mean: number }): Reac
       <span className={`rarity ${card.rarity || 'common'}`} title={card.rarity} />
       <span className="pips">{colorPips(card.color)}</span>
       <span className="name" title={card.name}>
+        {card.count !== undefined && card.count > 1 && (
+          <span className="count">{card.count}×</span>
+        )}
         {card.name}
       </span>
       <span className="minor" title="ALSA / OH WR">

@@ -2,22 +2,6 @@ import { BrowserWindow, session, type Session } from 'electron'
 import type { PersonalCardStats } from '../../shared/types'
 import { readCache, writeCache } from './cache'
 
-/**
- * Personal 17lands stats — UNOFFICIAL.
- *
- * 17lands has no public API for individual data. This module reuses the
- * session cookies from an in-app login window and calls the same internal
- * endpoints the logged-in website uses (discovered from the site bundle):
- *
- *   GET /api/account                                   -> logged-in check
- *   GET /data/user_deck_list                           -> { decks: [...] }
- *   GET /api/deck/draft/?draft_id=&deck_index=         -> { maindeck, sideboard }
- *   GET /data/event_details?draft_id=                  -> { details: { match_results } }
- *
- * Anything unexpected (401, shape change) degrades to null — the UI simply
- * hides the personal columns. Never let this module break the overlay.
- */
-
 const PARTITION = 'persist:17lands'
 const BASE = 'https://www.17lands.com'
 const PERSONAL_TTL_MS = 12 * 60 * 60 * 1000
@@ -31,8 +15,6 @@ function ses(): Session {
 async function apiGet(path: string): Promise<unknown | null> {
   try {
     const res = await ses().fetch(`${BASE}${path}`, {
-      // Main-process fetches have no document origin, so the default
-      // 'same-origin' credentials mode never sends the partition's cookies.
       credentials: 'include',
       headers: { Accept: 'application/json' }
     })
@@ -52,11 +34,6 @@ export async function isConnected(): Promise<boolean> {
 
 const COOKIE_LIFETIME_S = 90 * 24 * 60 * 60
 
-/**
- * 17lands issues a session-only cookie (no expiry), which Chromium keeps in
- * memory and drops on app quit — a login would not survive a restart. Re-save
- * every session cookie with an expiration date and flush to disk.
- */
 async function persistSessionCookies(): Promise<void> {
   try {
     const cookies = await ses().cookies.get({ domain: '17lands.com' })
@@ -75,17 +52,12 @@ async function persistSessionCookies(): Promise<void> {
           sameSite: cookie.sameSite,
           expirationDate: Date.now() / 1000 + COOKIE_LIFETIME_S
         })
-      } catch {
-        // best effort per cookie; an unpersisted one just means re-login later
-      }
+      } catch {}
     }
     await ses().cookies.flushStore()
-  } catch {
-    // cookie access failed entirely — login still works for this run
-  }
+  } catch {}
 }
 
-/** Opens the 17lands login page; resolves once logged in (or window closed). */
 export async function connect(): Promise<boolean> {
   if (await isConnected()) {
     await persistSessionCookies()
@@ -109,7 +81,6 @@ export async function connect(): Promise<boolean> {
         if (!win.isDestroyed()) win.close()
       })
     }
-    // Logins that finish via XHR/SPA routing never fire did-navigate
     const poll = setInterval(() => {
       void isConnected().then((ok) => {
         if (ok) finish(true)
@@ -143,11 +114,6 @@ interface DeckListEntry {
   losses: number | null
 }
 
-/**
- * Aggregates the user's per-card stats for one expansion:
- *  - win%: wins across games where the card was in your maindeck
- *  - play%: share of your drafts of this set where you maindecked the card
- */
 export async function getPersonalStats(set: string): Promise<PersonalStatsMap | null> {
   const cacheKey = `personal-${set}`
   const cached = readCache<Record<string, PersonalCardStats>>(cacheKey, PERSONAL_TTL_MS)
@@ -157,7 +123,6 @@ export async function getPersonalStats(set: string): Promise<PersonalStatsMap | 
   const rawDecks = Array.isArray(deckList?.decks) ? (deckList.decks as Record<string, any>[]) : null
   if (!rawDecks) return null
 
-  // Keep the newest deck build per draft, only for the requested set
   const byDraft = new Map<string, DeckListEntry>()
   for (const deck of rawDecks) {
     const expansion = firstString(deck, ['expansion', 'set', 'expansion_code'])

@@ -41,9 +41,8 @@ describe('LogTailer', () => {
     const lines: string[] = []
     tailer = new LogTailer(file, 25)
     tailer.on('line', (l: string) => lines.push(l))
-    tailer.start(false) // skip catch-up; only new writes count
+    tailer.start(false)
 
-    // Append via a kept-open fd the way Arena does — no directory entry change
     const fd = fs.openSync(file, 'a')
     fs.writeSync(fd, 'first\nsecond\n')
     fs.closeSync(fd)
@@ -72,7 +71,7 @@ describe('LogTailer', () => {
     tailer.start(true)
     await waitFor(() => lines.length >= 2)
 
-    fs.writeFileSync(file, 'fresh\n') // rotation: replaced with a smaller file
+    fs.writeFileSync(file, 'fresh\n')
     await waitFor(() => resets >= 1 && lines.includes('fresh'))
     expect(lines).toEqual(['first session line', 'another line', 'fresh'])
   })

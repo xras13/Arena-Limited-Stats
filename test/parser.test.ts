@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { LogParser } from '../src/main/log/parser'
 import { parseEventName } from '../src/main/log/events'
 
-// Real line shapes captured from the user's Player.log (grpIds/uuids shortened where harmless)
 const DRAFT_NOTIFY =
   '[UnityCrossThreadLogger]Draft.Notify {"draftId":"c8925cd2-e811-402d-b0f2-ee248397cb0f","SelfPick":2,"SelfPack":1,"PackCards":"104896,105143,105008,104941"}'
 const MAKE_PICK =
@@ -77,11 +76,45 @@ describe('LogParser', () => {
     ])
   })
 
+  it('accepts a singular EventGetCourseV2 response', () => {
+    const parser = new LogParser()
+    parser.feedLine('<== EventGetCourseV2(c7ebac43-a895-4932-986b-62947337e966)')
+    const events = parser.feedLine(
+      '{"Course":{"CourseId":"aa","InternalEventName":"Sealed_MSH_20260601","CurrentModule":"DeckBuild","CardPool":[105005]}}'
+    )
+    expect(events).toEqual([
+      {
+        type: 'CoursesUpdated',
+        courses: [
+          {
+            courseId: 'aa',
+            internalEventName: 'Sealed_MSH_20260601',
+            currentModule: 'DeckBuild',
+            cardPool: [105005]
+          }
+        ]
+      }
+    ])
+  })
+
+  it('falls back to CardPoolByCollation when CardPool is empty', () => {
+    const parser = new LogParser()
+    parser.feedLine(COURSES_HEADER)
+    const events = parser.feedLine(
+      '{"Courses":[{"CourseId":"aa","InternalEventName":"Sealed_MSH_20260601","CardPool":[],' +
+        '"CardPoolByCollation":[{"CollationId":200062,"CardPool":[105005,105084]},' +
+        '{"CollationId":200062,"CardPool":[105045]}]}]}'
+    )
+    expect(events[0]).toMatchObject({ type: 'CoursesUpdated' })
+    const [event] = events
+    if (event.type !== 'CoursesUpdated') throw new Error('expected CoursesUpdated')
+    expect(event.courses[0].cardPool).toEqual([105005, 105084, 105045])
+  })
+
   it('recovers when a response header is not followed by a payload', () => {
     const parser = new LogParser()
     parser.feedLine(COURSES_HEADER)
     expect(parser.feedLine('PAPA:Update()')).toEqual([])
-    // subsequent lines parse normally again
     expect(parser.feedLine(DRAFT_NOTIFY)).toHaveLength(1)
   })
 
@@ -93,7 +126,6 @@ describe('LogParser', () => {
   })
 })
 
-// Real quick-draft lines (Arena 2026-07, QuickDraft_MSH event)
 const BOT_STATUS_HEADER = '<== BotDraftDraftStatus(012b17a8-9b86-473d-9c29-fbf4addc8801)'
 const BOT_STATUS_PAYLOAD =
   '{"CurrentModule":"BotDraft","Payload":"{\\"Result\\":\\"Success\\",\\"EventName\\":\\"QuickDraft_MSH_20260702\\",\\"DraftStatus\\":\\"PickNext\\",\\"PackNumber\\":0,\\"PickNumber\\":0,\\"NumCardsToPick\\":1,\\"DraftPack\\":[\\"104987\\",\\"104911\\",\\"105076\\"],\\"PackStyles\\":[],\\"PickedCards\\":[],\\"PickedStyles\\":[]}"}'
@@ -148,10 +180,25 @@ describe('parseEventName', () => {
     expect(parseEventName('QuickDraft_FIN_20250701')).toEqual({ format: 'QuickDraft', set: 'FIN' })
     expect(parseEventName('Sealed_MSH_20260601')).toEqual({ format: 'Sealed', set: 'MSH' })
     expect(parseEventName('TradSealed_EOE_1')).toEqual({ format: 'TradSealed', set: 'EOE' })
+    expect(parseEventName('PremierDraft_HOB_20260811')).toEqual({ format: 'PremierDraft', set: 'HOB' })
+  })
+
+  it('finds the format when it is not the first segment (Arena Direct)', () => {
+    expect(parseEventName('ArenaDirect_HOB_Collector_Sealed_20260814')).toEqual({
+      format: 'Sealed',
+      set: 'HOB'
+    })
+  })
+
+  it('accepts longer Alchemy-style set codes', () => {
+    expect(parseEventName('Sealed_Y25MID_20260601')).toEqual({ format: 'Sealed', set: 'Y25MID' })
   })
 
   it('rejects non-limited events', () => {
     expect(parseEventName('DualColorPrecons')).toBeNull()
     expect(parseEventName('Constructed_Ranked')).toBeNull()
+    expect(parseEventName('Play_Brawl_Historic')).toBeNull()
+    expect(parseEventName('Historic_Ladder')).toBeNull()
+    expect(parseEventName('Ladder')).toBeNull()
   })
 })

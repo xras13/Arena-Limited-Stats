@@ -5,12 +5,6 @@ import { lookupLocalCard } from './arena-db'
 
 export type PersonalStatsLookup = (name: string) => PersonalCardStats | undefined
 
-/**
- * Joins Arena grpIds against 17lands ratings (primary, keyed by mtga_id),
- * then Scryfall (name + image), then Arena's local card database (name only,
- * but knows every grpId the game does — basics, brand-new sets).
- * Cards that resolve nowhere still render (as "#grpId") rather than vanish.
- */
 export async function rateCards(
   grpIds: number[],
   ratings: RatingsResult | null,
@@ -32,7 +26,6 @@ export async function rateCards(
       }
       const scryfall = await lookupArenaCard(grpId)
       if (scryfall) {
-        // Scryfall knows the card; 17lands may still have it under its name
         const byName = ratings?.byName.get(normalize(scryfall.name))
         return {
           grpId,
@@ -46,7 +39,6 @@ export async function rateCards(
       }
       const local = lookupLocalCard(grpId)
       if (local) {
-        // Alt printings share a name with the rated base printing
         const byName = ratings?.byName.get(normalize(local.name))
         return {
           grpId,
@@ -67,7 +59,19 @@ function normalize(name: string): string {
   return name.split('//')[0].trim().toLowerCase()
 }
 
-/** Sort for pack display: rated cards by GIH WR desc, unrated sink to bottom. */
+const BASIC_LAND = /^(Snow-Covered )?(Plains|Island|Swamp|Mountain|Forest|Wastes)$/i
+
+export function collapsePool(cards: RatedCard[]): RatedCard[] {
+  const byGrpId = new Map<number, RatedCard>()
+  for (const card of cards) {
+    if (card.rarity === 'basic' || BASIC_LAND.test(card.name)) continue
+    const existing = byGrpId.get(card.grpId)
+    if (existing) existing.count = (existing.count ?? 1) + 1
+    else byGrpId.set(card.grpId, { ...card, count: 1 })
+  }
+  return [...byGrpId.values()]
+}
+
 export function sortByGihWr(cards: RatedCard[]): RatedCard[] {
   return [...cards].sort((a, b) => {
     const aWr = a.rating?.everDrawnWinRate ?? -1

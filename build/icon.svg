@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#222633"/>
+      <stop offset="100%" stop-color="#0e1015"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f2f5fa"/>
+      <stop offset="100%" stop-color="#ccd3e0"/>
+    </linearGradient>
+    <linearGradient id="art" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38405a"/>
+      <stop offset="100%" stop-color="#242a3a"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+
+  <g transform="rotate(-9 512 512)" filter="url(#soft)">
+    <rect x="300" y="208" width="424" height="608" rx="46" fill="url(#card)"/>
+    <rect x="342" y="250" width="340" height="228" rx="26" fill="url(#art)"/>
+    <rect x="364" y="688" width="84" height="96"  rx="26" fill="#5aa9e6" opacity="0.5"/>
+    <rect x="470" y="622" width="84" height="162" rx="26" fill="#5aa9e6" opacity="0.82"/>
+    <rect x="576" y="540" width="84" height="244" rx="26" fill="#6fd08c"/>
+    <rect x="342" y="516" width="340" height="10" rx="5" fill="#aeb6c6" opacity="0.75"/>
+  </g>
+</svg>
