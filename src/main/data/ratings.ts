@@ -66,7 +66,7 @@ async function fetchRatingRows(set: string, format: string): Promise<RawRow[] | 
   const url = `https://www.17lands.com/api/card_data?expansion=${encodeURIComponent(set)}&event_type=${encodeURIComponent(format)}`
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'mtga-companion (personal draft overlay)' }
+      headers: { 'User-Agent': 'arena-limited-stats (personal draft overlay)' }
     })
     if (!res.ok) throw new Error(`17lands ${res.status}`)
     const payload = (await res.json()) as { data?: RawRow[] } | RawRow[]

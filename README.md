@@ -1,4 +1,4 @@
-# MTGA Companion
+# Arena Limited Stats
 
 A draft/sealed companion overlay for MTG Arena — an untapped.gg / 17lands
 Limited companion clone. When a draft or sealed event is active, an always-on-top
@@ -42,7 +42,7 @@ npm run dev                     # run with renderer hot reload
 npm test                        # vitest (parser/store/join, uses the real log fixture)
 npm run replay -- <Player.log>  # headless: replay any Arena log, print rated tables
 npm run build                   # compile main/preload/renderer to out/
-npm run dist                    # build MTGA Companion.app / dmg into dist/
+npm run dist                    # build Arena Limited Stats.app / dmg into dist/
 npm run dist:win                # build the Windows installer + portable zip
 npm run dist:all                # both platforms
 npm run icon                    # regenerate build/icon.png from build/icon.svg

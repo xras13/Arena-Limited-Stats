@@ -1,4 +1,4 @@
-# MTGA Companion — test build 0.1.0
+# Arena Limited Stats — test build 0.1.0
 
 A draft/sealed overlay for MTG Arena. It reads Arena's local `Player.log` and shows
 17lands win-rate data for the cards in front of you.
@@ -12,9 +12,9 @@ touches your account.
 
 | You're on | Download | Notes |
 |---|---|---|
-| **Windows 10/11** | `MTGA-Companion-0.1.0-win-x64.exe` | Installer. No admin rights needed. |
-| **Windows** (no install) | `MTGA-Companion-0.1.0-win-x64.zip` | Unzip anywhere, run `MTGA Companion.exe`. |
-| **Mac (Apple Silicon)** | `MTGA-Companion-0.1.0-mac-arm64.dmg` | M1/M2/M3/M4 only — not Intel Macs. |
+| **Windows 10/11** | `Arena-Limited-Stats-0.1.0-win-x64.exe` | Installer. No admin rights needed. |
+| **Windows** (no install) | `Arena-Limited-Stats-0.1.0-win-x64.zip` | Unzip anywhere, run `Arena Limited Stats.exe`. |
+| **Mac (Apple Silicon)** | `Arena-Limited-Stats-0.1.0-mac-arm64.dmg` | M1/M2/M3/M4 only — not Intel Macs. |
 
 ---
 
@@ -32,10 +32,10 @@ mode to **Windowed** or **Borderless Window**, or you won't see the overlay.
 
 ## Installing on macOS
 
-1. Open the `.dmg` and drag **MTGA Companion** to Applications.
+1. Open the `.dmg` and drag **Arena Limited Stats** to Applications.
 2. The first launch will be blocked because the app isn't notarized. Open
    **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**
-   next to the MTGA Companion message, then launch it again.
+   next to the Arena Limited Stats message, then launch it again.
 3. The app has **no Dock icon** by design, so it can float over Arena's fullscreen
    window. You'll just see the overlay panel itself.
 

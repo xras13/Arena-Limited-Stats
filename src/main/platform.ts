@@ -15,13 +15,13 @@ export function appDataDir(host: HostInfo = currentHost()): string {
   if (host.platform === 'win32') {
     const roaming =
       host.env.APPDATA ?? path.win32.join(host.env.USERPROFILE ?? host.home, 'AppData', 'Roaming')
-    return path.win32.join(roaming, 'mtga-companion')
+    return path.win32.join(roaming, 'arena-limited-stats')
   }
   if (host.platform === 'darwin') {
-    return path.posix.join(host.home, 'Library/Application Support/mtga-companion')
+    return path.posix.join(host.home, 'Library/Application Support/arena-limited-stats')
   }
   const xdg = host.env.XDG_CONFIG_HOME
-  return path.posix.join(xdg && xdg.length > 0 ? xdg : path.posix.join(host.home, '.config'), 'mtga-companion')
+  return path.posix.join(xdg && xdg.length > 0 ? xdg : path.posix.join(host.home, '.config'), 'arena-limited-stats')
 }
 
 export function appCacheDir(host: HostInfo = currentHost()): string {

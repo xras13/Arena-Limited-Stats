@@ -82,7 +82,7 @@ function startTailing(logPath: string): LogTailer {
 }
 
 function startSimulation(fixturePath: string): void {
-  const simPath = path.join(os.tmpdir(), `mtga-companion-sim-${Date.now()}.log`)
+  const simPath = path.join(os.tmpdir(), `arena-limited-stats-sim-${Date.now()}.log`)
   fs.writeFileSync(simPath, '')
   startTailing(simPath)
 

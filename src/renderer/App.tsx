@@ -16,7 +16,7 @@ export function App(): React.JSX.Element {
 
   const context =
     vm.kind === 'idle'
-      ? 'MTGA Companion'
+      ? 'Arena Limited Stats'
       : `${vm.set} · ${vm.format}${vm.kind === 'pack' ? ` · P${vm.pack}P${vm.pick}` : ''}`
   const source = vm.kind !== 'idle' && vm.ratingsSource !== vm.format ? `data: ${vm.ratingsSource}` : ''
 
@@ -33,7 +33,7 @@ export function App(): React.JSX.Element {
         >
           ⚙
         </button>
-        <button title="Quit MTGA Companion" onClick={() => window.close()}>
+        <button title="Quit Arena Limited Stats" onClick={() => window.close()}>
           ✕
         </button>
       </div>

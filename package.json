@@ -1,15 +1,15 @@
 {
-  "name": "mtga-companion",
-  "productName": "MTGA Companion",
+  "name": "arena-limited-stats",
+  "productName": "Arena Limited Stats",
   "version": "0.1.0",
-  "description": "MTG Arena draft/sealed companion overlay with 17lands ratings",
+  "description": "MTG Arena draft/sealed overlay with 17lands ratings",
   "main": "out/main/index.js",
   "author": "Alex Rasmussen",
   "license": "MIT",
   "private": true,
   "build": {
-    "appId": "com.alexrasmussen.mtga-companion",
-    "productName": "MTGA Companion",
+    "appId": "com.alexrasmussen.arena-limited-stats",
+    "productName": "Arena Limited Stats",
     "directories": {
       "output": "dist"
     },
@@ -35,7 +35,7 @@
       "category": "public.app-category.games",
       "identity": null
     },
-    "artifactName": "MTGA-Companion-${version}-${os}-${arch}.${ext}",
+    "artifactName": "Arena-Limited-Stats-${version}-${os}-${arch}.${ext}",
     "win": {
       "target": [
         {
@@ -57,7 +57,7 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "shortcutName": "MTGA Companion"
+      "shortcutName": "Arena Limited Stats"
     }
   },
   "scripts": {

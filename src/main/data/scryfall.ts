@@ -37,7 +37,7 @@ async function doLookup(grpId: number, cacheKey: string): Promise<ScryfallCard |
 
   try {
     const res = await fetch(`https://api.scryfall.com/cards/arena/${grpId}`, {
-      headers: { 'User-Agent': 'mtga-companion (personal draft overlay)' }
+      headers: { 'User-Agent': 'arena-limited-stats (personal draft overlay)' }
     })
     if (res.status === 404) {
       writeCache<CachedLookup>(cacheKey, 'not_found')

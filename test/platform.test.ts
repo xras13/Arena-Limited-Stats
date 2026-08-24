@@ -22,13 +22,13 @@ const mac: HostInfo = { platform: 'darwin', env: {}, home: '/Users/tester' }
 
 describe('platform paths — Windows', () => {
   it('puts app data under %APPDATA%', () => {
-    expect(appDataDir(windows)).toBe('C:\\Users\\Tester\\AppData\\Roaming\\mtga-companion')
-    expect(appCacheDir(windows)).toBe('C:\\Users\\Tester\\AppData\\Roaming\\mtga-companion\\cache')
+    expect(appDataDir(windows)).toBe('C:\\Users\\Tester\\AppData\\Roaming\\arena-limited-stats')
+    expect(appCacheDir(windows)).toBe('C:\\Users\\Tester\\AppData\\Roaming\\arena-limited-stats\\cache')
   })
 
   it('derives AppData\\Roaming from the profile when APPDATA is unset', () => {
     const noAppData: HostInfo = { ...windows, env: { USERPROFILE: 'C:\\Users\\Tester' } }
-    expect(appDataDir(noAppData)).toBe('C:\\Users\\Tester\\AppData\\Roaming\\mtga-companion')
+    expect(appDataDir(noAppData)).toBe('C:\\Users\\Tester\\AppData\\Roaming\\arena-limited-stats')
   })
 
   it('finds Arena\'s log in LocalLow, where Unity writes it', () => {
@@ -62,7 +62,7 @@ describe('platform paths — Windows', () => {
 describe('platform paths — macOS (unchanged from before the Windows port)', () => {
   it('keeps the original cache location so existing caches still load', () => {
     expect(appCacheDir(mac)).toBe(
-      '/Users/tester/Library/Application Support/mtga-companion/cache'
+      '/Users/tester/Library/Application Support/arena-limited-stats/cache'
     )
   })
 
@@ -80,7 +80,7 @@ describe('platform paths — macOS (unchanged from before the Windows port)', ()
 describe('platform paths — other', () => {
   it('does not throw on Linux and reports no Arena install', () => {
     const linux: HostInfo = { platform: 'linux', env: {}, home: '/home/tester' }
-    expect(appCacheDir(linux)).toBe('/home/tester/.config/mtga-companion/cache')
+    expect(appCacheDir(linux)).toBe('/home/tester/.config/arena-limited-stats/cache')
     expect(arenaRawDirs(linux)).toEqual([])
   })
 })
