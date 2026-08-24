@@ -5,8 +5,7 @@ Limited companion clone. When a draft or sealed event is active, an always-on-to
 overlay shows every card in the current pack (or your sealed pool) ranked by
 17lands data, with your personal 17lands win% / play% per card once connected.
 
-Runs on macOS (Apple Silicon) and Windows. Prebuilt test builds and install
-instructions live in [TESTERS.md](TESTERS.md).
+Runs on macOS (Apple Silicon) and Windows. For one click releases view releases tab.
 
 ## How it works
 
