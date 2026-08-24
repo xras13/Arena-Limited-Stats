@@ -5,7 +5,7 @@ Limited companion clone. When a draft or sealed event is active, an always-on-to
 overlay shows every card in the current pack (or your sealed pool) ranked by
 17lands data, with your personal 17lands win% / play% per card once connected.
 
-Runs on macOS (Apple Silicon) and Windows. For one click releases view releases tab.
+Runs on macOS (Apple Silicon) and Windows. For one click releases view releases tab. The releases are unsigned, so testers hit SmartScreen on Windows and need Privacy & Security → "Open Anyway" on macOS after being blocked by your OS when trying to run the app. 
 
 ## How it works
 
@@ -29,10 +29,6 @@ Runs on macOS (Apple Silicon) and Windows. For one click releases view releases 
   grpId the game does, including basics and sets Scryfall hasn't mapped yet.
 - If the event's exact 17lands format has too small a sample (e.g. PickTwoDraft),
   ratings fall back to Premier Draft and the header shows `data: PremierDraft`.
-- Personal stats (UNOFFICIAL): Settings → "Connect 17lands account" opens a login
-  window; the app then aggregates your per-card win%/play% from your 17lands deck
-  history using the site's internal endpoints. If 17lands changes their site this
-  feature degrades gracefully — the rest of the app is unaffected.
 
 ## Commands
 
